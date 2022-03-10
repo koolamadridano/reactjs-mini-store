@@ -15,7 +15,7 @@ module.exports = {
         try {
             const customerId = req.params.customerId;
             const _select = { __v: 0 };
-            return Data.find({ customerId })
+            return Cart.find({ customerId })
                 .sort({ _id: -1 }) // filter by _id
                 .select(_select) // Do not return  __v and registrant
                 .then((value) => res.status(200).json(value))
