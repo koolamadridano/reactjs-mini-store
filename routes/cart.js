@@ -9,7 +9,7 @@ router.post("/cart", (req, res) => {
 router.get("/cart/:customerId", (req, res) => {
     cartController.getAllCart(req, res);
 });
-router.put("/cart/:customerId", (req, res) => {
+router.put("/cart", (req, res) => {
     cartController.updateCart(req, res);
 });
 module.exports = router;

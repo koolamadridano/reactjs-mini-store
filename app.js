@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const mongoose = require("mongoose");
@@ -7,7 +8,6 @@ const { fileFilter } = require("./services/img-upload/fileFilter");
 const storage = multer.diskStorage({});
 const port = process.env.PORT || 5000;
 const connectiongString = process.env.CONNECTION_STRING;
-
 const app = express();
 
 try {
@@ -20,6 +20,7 @@ try {
     app.use(express.urlencoded({ extended: true }));
     app.use(multer({ storage, fileFilter }).single("img"));
 
+    app.use("/api", require("./routes/order"));
     app.use("/api", require("./routes/cart"));
     app.use("/api", require("./routes/user"));
     app.use("/api", require("./routes/img"));

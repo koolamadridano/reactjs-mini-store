@@ -1,7 +1,7 @@
 const Cart = require("../models/cart");
 
 module.exports = {
-    async addToCart() {
+    async addToCart(req, res) {
         try {
             return new Cart(req.body)
                 .save()
@@ -26,9 +26,10 @@ module.exports = {
     },
     async updateCart(req, res) {
         try {
-            const customerId = req.params.id;
+            const customerId = req.query.customerId;
+            const cartId = req.query.cartId;
             const quantity = req.query.quantity;
-            Cart.findOneAndUpdate({ customerId }, {
+            Cart.findOneAndUpdate({ _id: cartId, customerId }, {
                     quantity,
                 })
                 .then((value) => {
