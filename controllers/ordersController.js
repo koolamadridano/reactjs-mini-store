@@ -9,7 +9,7 @@ module.exports = {
                 payment_method_types: ["card"],
                 mode: "payment",
                 success_url: `${process.env.BASE_URL}/success`,
-                cancel_url: `${process.env.BASE_URL}/cancelled`,
+                cancel_url: `${process.env.BASE_URL}`,
                 customer_email: req.body.email,
                 line_items: req.body.items,
             });
