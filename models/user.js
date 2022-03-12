@@ -11,6 +11,10 @@ const UserSchema = new Schema({
     type: String,
     required: [true, "Password is required"],
   },
+  address: {
+    type: String,
+    required: [true, "address is required"],
+  },
   hashValue: {
     type: String,
   },
