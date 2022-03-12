@@ -17,7 +17,7 @@ try {
         .then(() => console.log("SERVER IS CONNECTED TO MONGODB"))
         .catch(() => console.log("SERVER CANNOT CONNECT TO MONGODB"));
         
-    app.use(cors());
+    app.use(cors({ origin: '*' }));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(multer({ storage, fileFilter }).single("img"));
