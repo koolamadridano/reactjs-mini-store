@@ -1,6 +1,7 @@
+
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { cartStateItems } from "./state/cart";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { cartState, cartStateItems } from "./state/cart";
 import Cancelled from "./pages/cancelled";
 import Store from "./pages/store";
 import FoodAndNecessities from "./pages/sub_pages/food_and_necessities";
@@ -12,10 +13,9 @@ import Tshirts from "./pages/sub_pages/tshirts";
 import Success from "./pages/success";
 import axios from "axios";
 
-
-
 function App() {
   const cartItems = useRecoilValue(cartStateItems);
+  const setCartItems = useSetRecoilState(cartState);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -295,15 +295,74 @@ function App() {
 
 
   const handleCheckout = async () => {
-    await axios.post('https://api-react-mini-store.herokuapp.com/api/initialize-checkout', {})
-      .then((value) => {
-        console.log(value.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      })
+     try {
+       var data = cartItems.map((element) =>  {
+        return {
+            "price_data": {
+                "currency": "php",
+                "product_data": {
+                    "name": element.selected.title
+                },
+                "unit_amount":  element.selected.unit_amount
+            },
+            "quantity": element.selectedQty
+        }
+       });
+       console.log(data);
+        await axios.post("https://api-react-mini-store.herokuapp.com/api/initialize-checkout", {
+          "email": "eren.jaeger@mail.io",
+          "items": [
+            ...data
+          ]
+        })
+        .then((value) => {
+         window.location.href = value.data.url;
+
+        })
+        .catch((err) => console.error(err));
+
+     } catch (error) {
+       console.log(error)
+     }
+
   }
 
+  const calculate = (items) => {
+    let total = 0;
+   for (let index = 0; index < items.length; index++) {
+    total+= items[index].selected.price *  items[index].selectedQty;
+   }
+    return  total;
+  }
+
+  const handleAdjustItemQty = (type, selectedItem) => {
+  
+
+    if(type === "increment") {
+      let newList = cartItems.map((item) => {
+          if (item.selected.id === selectedItem.selected.id) return { ...item, selectedQty:  item.selectedQty +1 };
+          else return item;
+      });
+
+     setCartItems(newList);
+      return;
+    }
+    if(type === "decrement") {
+      let newList = cartItems.map((item) => {
+          if (item.selected.id === selectedItem.selected.id) {
+            if(item.selectedQty != 1) {
+              return { ...item, selectedQty:  item.selectedQty -1 }
+
+            }
+          };
+          return item;
+      });
+
+     setCartItems(newList);
+      return;
+
+  }
+}
   return (
     <>
     <div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasCart" aria-labelledby="offcanvasRightLabel">
@@ -313,7 +372,7 @@ function App() {
       </div>
       <div className="offcanvas-body">
         {cartItems.slice(0).reverse().map((element) => {
-          return <div  key={element.selected.id}>
+          return <div  className="mt-2" key={element.selected.id}>
             <div className="row ">
               <div className="col-md-4 ">
                 <img  
@@ -324,14 +383,28 @@ function App() {
               <div className="col">
                 <h5 className="p-0 m-0 fw-bold">{element.selected.title}</h5>
                 <h6  className="p-0 m-0">{formatPricePHP(element.selected.price)}</h6>
-                <h6  className="p-0 m-0 mt-2" style={{fontSize:"12px"}}>QTY {element.selectedQty}</h6>
-                <h6  className="p-0 m-0"  style={{fontSize:"12px"}}>SUB TOTAL {formatPricePHP(element.selectedQty * element.selected.price)}</h6>
+                <div className="d-flex mt-3">
+                <span  
+                      onClick={() => handleAdjustItemQty("decrement", element)}
+                      className="uk-icon-button pointer"  
+                      uk-icon="icon: minus"></span>
+                  <span className="mx-2"></span>
+                  <span  
+                      onClick={() => handleAdjustItemQty("increment", element)}
+                      className="uk-icon-button pointer"  
+                      uk-icon="icon: plus"></span>
               </div>
+                <h6  className="p-0 m-0 mt-3" style={{fontSize:"12px"}}>QTY {element.selectedQty}</h6>
+                <h6  className="p-0 m-0"  style={{fontSize:"12px"}}>SUB TOTAL {formatPricePHP(element.selectedQty * element.selected.price)}</h6>
+            
+             
+              </div>
+              <hr className="mt-3"/>
             </div>
           </div>
         })}
             <p className="p-0 m-0 text-muted mt-5">TOTAL</p>
-            <h2 className="p-0 m-0 fw-bold">{formatPricePHP(52300)}</h2>
+            <h2 className="p-0 m-0 fw-bold">{formatPricePHP(calculate(cartItems))}</h2>
 
              <button 
                   onClick={() => handleCheckout()}
