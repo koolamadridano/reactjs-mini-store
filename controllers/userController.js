@@ -8,7 +8,7 @@ module.exports = {
     // [POST]
     async createUser(req, res) {
         try {
-            const { email, password } = req.body;
+            const { email, password , address} = req.body;
             let isExisted = await User.findOne({ email });
             if (isExisted) {
                 return res.status(400).send({ message: "Email is currently used" });
@@ -18,6 +18,7 @@ module.exports = {
                 User({
                         email,
                         password,
+                        address,
                         hashValue,
                     })
                     .save()
@@ -32,6 +33,7 @@ module.exports = {
                         return res.status(200).json({
                             accountId: value._id,
                             email,
+                            address,
                             password: hashValue,
                         });
                     })
@@ -58,6 +60,7 @@ module.exports = {
                 return res.status(200).json({
                     accountId: user._id,
                     email: user.email,
+                    address: user.address,
                     dateJoined: user.dateJoined,
                     token: accessToken,
                 });
