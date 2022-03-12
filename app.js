@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const mongoose = require("mongoose");
+const cors = require('cors')
 
 const { fileFilter } = require("./services/img-upload/fileFilter");
 
@@ -15,7 +16,8 @@ try {
         .connect(connectiongString)
         .then(() => console.log("SERVER IS CONNECTED TO MONGODB"))
         .catch(() => console.log("SERVER CANNOT CONNECT TO MONGODB"));
-
+        
+    app.use(cors());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(multer({ storage, fileFilter }).single("img"));
