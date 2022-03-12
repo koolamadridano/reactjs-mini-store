@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Success() {
   return <div>
-    <div className="container">
+    <div className="container" style={{background: "#fafafa"}}>
       <div className="row">
         <div className="col"></div>
         <div className="col-md-10">
