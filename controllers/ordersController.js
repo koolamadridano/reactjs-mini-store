@@ -18,6 +18,17 @@ module.exports = {
             console.error(error);
         }
     },
+    async addOrder(req, res) {
+        try {
+          return new Order(req.body)
+                .save()
+                .then((value) => res.status(200).json(value))
+                .catch((err) => res.status(400).send(err.errors));
+        } catch (error) {
+            console.error(error);
+        }
+        
+    },
     async getAllOrders(req, res) {
         try {
             const customerId = req.params.customerId;
