@@ -417,6 +417,7 @@ function App() {
       <div className="container-fluid">
         {/* START TITLE */}
         <span
+        onClick={() => navigate("/")}
           className="pointer"
           style={{ fontSize: "25px", fontWeight: "bold" }}
         >
