@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { cartState, cartStateItems } from "./state/cart";
@@ -12,11 +13,14 @@ import Tablets from "./pages/sub_pages/tablets";
 import Tshirts from "./pages/sub_pages/tshirts";
 import Success from "./pages/success";
 import axios from "axios";
+import Login from "./pages/user/login";
+import Register from "./pages/user/register";
+import Admin from "./pages/user/admin";
 
 function App() {
   const cartItems = useRecoilValue(cartStateItems);
   const setCartItems = useSetRecoilState(cartState);
-
+  const [isAuthenticated, setIsAuthenticated] = useState();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -293,7 +297,6 @@ function App() {
     return "₱" + a.join("");
   }
 
-
   const handleCheckout = async () => {
      try {
        var data = cartItems.map((element) =>  {
@@ -308,18 +311,23 @@ function App() {
             "quantity": element.selectedQty
         }
        });
-       console.log(data);
-        await axios.post("https://api-react-mini-store.herokuapp.com/api/initialize-checkout", {
-          "email": "eren.jaeger@mail.io",
-          "items": [
-            ...data
-          ]
-        })
-        .then((value) => {
-         window.location.href = value.data.url;
+   
+       let onCheckout = await axios.post("https://api-react-mini-store.herokuapp.com/api/order", {
+          "customerId": localStorage.getItem("accountId"),
+          "customerEmail": localStorage.getItem("email"),
+          "customerAddress": localStorage.getItem("address"),
+          "total": 0,
+          "orders": [...data ]
+        });
+        var onAddToCart = await axios.post("https://api-react-mini-store.herokuapp.com/api/initialize-checkout", {
+          "email": localStorage.getItem("email"),
+          "items": [ ...data ]
+        });
 
-        })
-        .catch((err) => console.error(err));
+        if(onCheckout.status == 200) {
+          window.location.href = onAddToCart.data.url;
+          return;
+        }
 
      } catch (error) {
        console.log(error)
@@ -352,17 +360,26 @@ function App() {
           if (item.selected.id === selectedItem.selected.id) {
             if(item.selectedQty != 1) {
               return { ...item, selectedQty:  item.selectedQty -1 }
-
             }
           };
           return item;
       });
 
      setCartItems(newList);
-      return;
+    return;
 
   }
-}
+  }
+
+  useEffect(() => {
+    var dummyToken = localStorage.getItem("accountId");
+    if(dummyToken != null ) {
+      setIsAuthenticated(true);
+      return;
+    }
+    setIsAuthenticated(false);
+  }, [location.pathname])
+  
   return (
     <>
     <div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasCart" aria-labelledby="offcanvasRightLabel">
@@ -403,21 +420,25 @@ function App() {
             </div>
           </div>
         })}
-            <p className="p-0 m-0 text-muted mt-5">TOTAL</p>
-            <h2 className="p-0 m-0 fw-bold">{formatPricePHP(calculate(cartItems))}</h2>
+        {cartItems.length != 0 && 
+            <div>
+              <p className="p-0 m-0 text-muted mt-5">TOTAL</p>
+              <h2 className="p-0 m-0 fw-bold">{formatPricePHP(calculate(cartItems))}</h2>
 
-             <button 
-                  onClick={() => handleCheckout()}
-                  type="button" 
-                  className="btn btn-success w-100 mt-4">CHECKOUT</button>
+              <button 
+                    onClick={() => handleCheckout()}
+                    type="button" 
+                    className="btn btn-success w-100 mt-4">CHECKOUT</button>
+            </div>}
       </div>
     </div>
-
+    
+    {isAuthenticated && 
     <nav className="navbar navbar-expand-lg kbg-primary sticky-top p-5">
       <div className="container-fluid">
         {/* START TITLE */}
         <span
-        onClick={() => navigate("/")}
+          onClick={() => navigate("/")}
           className="pointer"
           style={{ fontSize: "25px", fontWeight: "bold" }}
         >
@@ -451,34 +472,47 @@ function App() {
           </div>
           <div className="offcanvas-body">
             <ul className="navbar-nav justify-content-end flex-grow-1 pe-3 p-0 m-0">
-              {navItems.map((element) => (
-                <li
-                onClick={() => {
-                  navigate(element.route);
-                }}
-                  key={element.id}
-                  className={`nav-item ktext-fade  ms-4 pointer ${location.pathname == element.route? 'fw-bold': ''}`}
-                  style={{ lineHeight: 2 }}
-                >
-                  {element.title}
-                </li>
-              ))}
-
+           
+                {navItems.map((element) => (
+                  <li
+                  onClick={() => {
+                    navigate(element.route);
+                  }}
+                    key={element.id}
+                    className={`nav-item ktext-fade  ms-3 pointer ${location.pathname == element.route? 'fw-bold': ''}`}
+                    style={{ lineHeight: 2 }}
+                  >
+                    {element.title}
+                  </li>
+                ))}
+             
               <li 
-                data-bs-toggle="offcanvas" 
-                data-bs-target="#offcanvasCart" 
-                aria-controls="offcanvasRight"
-                className="nav-item ktext-fade ms-5 pointer"            
-                >
+                  data-bs-toggle="offcanvas" 
+                  data-bs-target="#offcanvasCart" 
+                  aria-controls="offcanvasRight"
+                  className="nav-item ktext-fade ms-5 pointer">
                 <span uk-icon="icon: bag;"></span> 
                 <span style={{fontSize: "8px"}}> {cartItems.length}</span>
               </li>
+              <li
+                  onClick={() => {
+                    localStorage.removeItem("accountId");
+                    localStorage.removeItem("email");
+                    localStorage.removeItem("address");
+                    navigate('/login');
+                  }}
+                  
+                    className='nav-item ktext-fade  ms-5 pointer '
+                    style={{ lineHeight: 2 }}
+                  >
+                    Logout
+                  </li>
             </ul>
           </div>
         </div>
       </div>
-    </nav>
-     
+    </nav>}
+
      <div className="container-fluid">
         <div className="row">
               <div className="col-md-2"> </div>
@@ -486,6 +520,11 @@ function App() {
                 <Routes>
                   <Route path="cancelled" element={<Cancelled />} />
                   <Route path="success" element={<Success />} />
+
+                  <Route path="login" element={<Login />} />
+                  <Route path="register" element={<Register />} />
+                  <Route path="admin" element={<Admin />} />
+
 
                   <Route 
                     path="/" 

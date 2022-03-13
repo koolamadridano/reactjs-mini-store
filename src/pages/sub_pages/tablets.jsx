@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { cartState, cartStateItems } from "../../state/cart";
 import { ToastContainer, toast } from 'react-toastify';
@@ -9,6 +10,7 @@ export default function Tablets({ formatPricePHP, items }) {
   let [selectedQty, setSelectedQty] = useState(1);
   const setCartItems = useSetRecoilState(cartState);
   const cartItems = useRecoilValue(cartStateItems);
+  const navigate = useNavigate();
 
   const handleAddToCart = () => {
     console.log(cartItems);
@@ -64,6 +66,13 @@ export default function Tablets({ formatPricePHP, items }) {
   const handleSelectedItem = (item) => {
     setSelected(item);
   }
+  useEffect(() => {
+    var dummyToken = localStorage.getItem("accountId");
+    if(dummyToken == null) {
+      navigate("/login");
+      return;
+    }
+  }, [])
   return (
    <div>
         <ToastContainer
