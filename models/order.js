@@ -7,6 +7,10 @@ const OrderSchema = new Schema({
         type: String,
         required: [true, "accountId is required"],
     },
+    customerEmail: {
+        type: String,
+        required: [true, "customerEmail is required"],
+    },
     customerAddress: {
         type: String,
         required: [true, "customerAddress is required"],
