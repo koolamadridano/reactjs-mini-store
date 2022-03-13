@@ -12,6 +12,7 @@ const OrderSchema = new Schema({
         required: [true, "customerAddress is required"],
     },
     orderId: { type: String, default: uuidv4() },
+    orders: [],
     total: { type: Number, required: [true, "total is required"] },
     date: {
         type: Date,
